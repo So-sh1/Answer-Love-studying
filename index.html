@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1028" />
+  <title>StudyGram</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="phone">
+    <section class="screen active" id="quizScreen">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">StudyGram</p>
+          <h1>今日の一問一答</h1>
+        </div>
+        <button class="glass-btn" id="themeBtn">◐</button>
+      </header>
+
+      <section class="daily-card">
+        <div>
+          <span>Today</span>
+          <strong id="todayCount">0</strong>
+          <small>/ <b id="goalCount">30</b>問</small>
+        </div>
+        <div class="ring"><span id="accuracyText">0%</span></div>
+      </section>
+
+      <section class="quiz-card">
+        <div class="quiz-top">
+          <span class="chip" id="tagChip">全タグ</span>
+          <span class="chip ghost" id="progressText">0 / 0</span>
+        </div>
+
+        <p class="meta" id="metaText">問題を追加して始めよう</p>
+        <h2 id="questionText">＋ボタンから問題を追加できるで</h2>
+
+        <div class="input-area">
+          <label for="answerInput">あなたの答え</label>
+          <textarea id="answerInput" placeholder="ここに入力"></textarea>
+        </div>
+
+        <div class="main-actions">
+          <button id="checkBtn" class="primary">判定する</button>
+          <button id="showBtn">答え</button>
+        </div>
+
+        <div class="result hidden" id="resultBox">
+          <div class="result-head">
+            <span id="resultLabel">判定</span>
+            <b id="scoreText">0%</b>
+          </div>
+          <p class="answer-label">正解</p>
+          <p class="answer" id="correctAnswer"></p>
+          <p class="explain" id="explainText"></p>
+
+          <div class="grade-grid">
+            <button data-grade="0" class="bad">忘れた</button>
+            <button data-grade="1" class="meh">惜しい</button>
+            <button data-grade="2" class="good">正解</button>
+            <button data-grade="3" class="perfect">余裕</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="button-row">
+        <button id="prevBtn">← 前</button>
+        <button id="hintBtn">ヒント</button>
+        <button id="nextBtn">次 →</button>
+      </section>
+    </section>
+
+    <section class="screen" id="addScreen">
+      <header class="page-head">
+        <h1>問題追加</h1>
+        <p>授業中にメモる感覚でサクッと登録。</p>
+      </header>
+
+      <form class="add-card" id="addForm">
+        <label>問題</label>
+        <textarea id="newQuestion" required placeholder="例：-OH の官能基名は？"></textarea>
+
+        <label>答え</label>
+        <textarea id="newAnswer" required placeholder="例：ヒドロキシ基"></textarea>
+
+        <label>タグ</label>
+        <input id="newTags" placeholder="例：化学, 官能基" />
+
+        <label>ヒント</label>
+        <input id="newHint" placeholder="例：水酸基ともいう" />
+
+        <label>解説</label>
+        <textarea id="newExplain" placeholder="例：アルコール類に含まれる官能基。"></textarea>
+
+        <button class="primary save-btn">保存する</button>
+      </form>
+    </section>
+
+    <section class="screen" id="listScreen">
+      <header class="page-head">
+        <h1>問題リスト</h1>
+        <p id="listSub">0問登録中</p>
+      </header>
+
+      <div class="search-card">
+        <input id="searchInput" placeholder="検索" />
+        <select id="modeSelect">
+          <option value="smart">スマート</option>
+          <option value="all">全問</option>
+          <option value="weak">苦手</option>
+          <option value="star">お気に入り</option>
+        </select>
+      </div>
+
+      <div id="cardList" class="card-list"></div>
+    </section>
+
+    <section class="screen" id="statsScreen">
+      <header class="page-head">
+        <h1>成績</h1>
+        <p>積み上げ見える化。</p>
+      </header>
+
+      <section class="stats-grid">
+        <div class="stat"><span>総解答</span><b id="totalReviews">0</b></div>
+        <div class="stat"><span>連続</span><b id="streak">0日</b></div>
+        <div class="stat"><span>Lv.</span><b id="level">1</b></div>
+        <div class="stat"><span>苦手</span><b id="weakCount">0</b></div>
+      </section>
+
+      <section class="panel">
+        <h2>最近7日</h2>
+        <div class="bars" id="bars"></div>
+      </section>
+
+      <section class="panel">
+        <h2>バックアップ</h2>
+        <div class="backup-actions">
+          <button id="exportBtn">JSON保存</button>
+          <label class="upload-label">JSON読込<input type="file" id="importFile" accept="application/json" hidden /></label>
+        </div>
+      </section>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab active" data-screen="quizScreen"><span>🏠</span><small>出題</small></button>
+      <button class="tab" data-screen="addScreen"><span>＋</span><small>追加</small></button>
+      <button class="tab" data-screen="listScreen"><span>📚</span><small>一覧</small></button>
+      <button class="tab" data-screen="statsScreen"><span>📈</span><small>成績</small></button>
+    </nav>
+  </main>
+
+  <template id="listTemplate">
+    <article class="mini-card">
+      <div>
+        <strong class="mini-q"></strong>
+        <p class="mini-a"></p>
+        <p class="mini-meta"></p>
+      </div>
+      <div class="mini-actions">
+        <button class="star">☆</button>
+        <button class="edit">編集</button>
+        <button class="delete">削除</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
