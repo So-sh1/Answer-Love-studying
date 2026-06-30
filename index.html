@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="system">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="description" content="GitHub Pagesで動く本格一問一答アプリ。忘却曲線、タグ、CSV、PWA対応。" />
+  <title>StudyForge 一問一答</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="logo">S</div>
+        <div>
+          <strong>StudyForge</strong>
+          <span>一問一答</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-btn active" data-view="quiz">出題</button>
+        <button class="nav-btn" data-view="deck">問題管理</button>
+        <button class="nav-btn" data-view="stats">成績</button>
+        <button class="nav-btn" data-view="import">入出力</button>
+        <button class="nav-btn" data-view="settings">設定</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="mini-stat">
+          <span>今日</span>
+          <strong id="todaySolvedMini">0問</strong>
+        </div>
+        <div class="mini-stat">
+          <span>連続</span>
+          <strong id="streakMini">0日</strong>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn menu-btn" id="menuBtn" aria-label="メニュー">☰</button>
+        <div>
+          <h1 id="pageTitle">出題</h1>
+          <p id="pageSub">今日やるべき問題を優先して出す。</p>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="themeToggle" title="テーマ切替">◐</button>
+          <button class="primary small" id="quickAddOpen">＋追加</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-quiz">
+        <div class="dashboard-grid">
+          <article class="metric">
+            <span>今日の演習</span>
+            <strong id="todaySolved">0</strong>
+            <small>問</small>
+          </article>
+          <article class="metric">
+            <span>正答率</span>
+            <strong id="accuracy">0</strong>
+            <small>%</small>
+          </article>
+          <article class="metric">
+            <span>復習期限</span>
+            <strong id="dueCount">0</strong>
+            <small>問</small>
+          </article>
+          <article class="metric">
+            <span>総問題</span>
+            <strong id="totalCount">0</strong>
+            <small>問</small>
+          </article>
+        </div>
+
+        <article class="card quiz-card">
+          <div class="quiz-head">
+            <div>
+              <span class="pill" id="modePill">スマート復習</span>
+              <span class="pill muted" id="tagPill">全タグ</span>
+            </div>
+            <div class="quiz-progress">
+              <span id="currentProgress">0 / 0</span>
+            </div>
+          </div>
+
+          <div class="question-area">
+            <p id="questionMeta" class="meta-text"></p>
+            <h2 id="questionText">問題を追加してスタートしよう</h2>
+          </div>
+
+          <div class="answer-panel">
+            <label for="typedAnswer">答え入力</label>
+            <textarea id="typedAnswer" rows="2" placeholder="ここに答えを書く。Enterで判定、Shift+Enterで改行。"></textarea>
+            <div class="answer-actions">
+              <button id="checkBtn" class="primary">判定</button>
+              <button id="showBtn">答えを見る</button>
+              <button id="hintBtn">ヒント</button>
+            </div>
+          </div>
+
+          <div class="result-box hidden" id="resultBox">
+            <div class="result-top">
+              <span id="resultBadge" class="result-badge">判定</span>
+              <span id="similarityText">一致率 0%</span>
+            </div>
+            <p class="answer-title">正解</p>
+            <p id="correctAnswer" class="correct-answer"></p>
+            <p id="explanationText" class="explanation"></p>
+            <div class="grade-buttons">
+              <button data-grade="0" class="grade danger">忘れた</button>
+              <button data-grade="1" class="grade warn">惜しい</button>
+              <button data-grade="2" class="grade ok">正解</button>
+              <button data-grade="3" class="grade great">余裕</button>
+            </div>
+          </div>
+
+          <div class="quiz-controls">
+            <button id="prevQuestion">← 前</button>
+            <button id="nextQuestion">次 →</button>
+            <button id="shuffleNow">シャッフル</button>
+            <button id="starBtn">☆ お気に入り</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h2>出題モード</h2>
+              <p>今の状況に合わせて出し方を変えられる。</p>
+            </div>
+          </div>
+          <div class="mode-grid">
+            <button class="mode-card active" data-mode="smart">
+              <strong>スマート復習</strong>
+              <span>期限切れ・苦手を優先</span>
+            </button>
+            <button class="mode-card" data-mode="all">
+              <strong>全問</strong>
+              <span>登録順で全部</span>
+            </button>
+            <button class="mode-card" data-mode="weak">
+              <strong>苦手</strong>
+              <span>不正解が多い問題</span>
+            </button>
+            <button class="mode-card" data-mode="starred">
+              <strong>お気に入り</strong>
+              <span>星付きだけ</span>
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" id="view-deck">
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h2>問題追加</h2>
+              <p>タグは「化学, 英語」みたいにカンマ区切りでOK。</p>
+            </div>
+          </div>
+          <form id="addForm" class="question-form">
+            <input id="qInput" placeholder="問題 例：-OH の官能基名は？" required />
+            <input id="aInput" placeholder="答え 例：ヒドロキシ基" required />
+            <input id="tagInput" placeholder="タグ 例：化学, 官能基" />
+            <input id="hintInput" placeholder="ヒント 例：水酸基ともいう" />
+            <textarea id="explainInput" placeholder="解説 例：アルコール類に含まれる官能基。" rows="3"></textarea>
+            <button class="primary" type="submit">問題を追加</button>
+          </form>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h2>問題一覧</h2>
+              <p id="deckSummary">0問</p>
+            </div>
+            <div class="inline-controls">
+              <input id="searchInput" placeholder="検索" />
+              <select id="tagFilter"></select>
+              <select id="sortSelect">
+                <option value="createdDesc">新しい順</option>
+                <option value="createdAsc">古い順</option>
+                <option value="dueAsc">復習期限順</option>
+                <option value="weakDesc">苦手順</option>
+                <option value="accuracyAsc">正答率低い順</option>
+              </select>
+            </div>
+          </div>
+          <div id="questionList" class="question-list"></div>
+        </article>
+      </section>
+
+      <section class="view" id="view-stats">
+        <div class="dashboard-grid">
+          <article class="metric">
+            <span>総解答数</span>
+            <strong id="statReviews">0</strong>
+            <small>回</small>
+          </article>
+          <article class="metric">
+            <span>連続学習</span>
+            <strong id="statStreak">0</strong>
+            <small>日</small>
+          </article>
+          <article class="metric">
+            <span>最高連続</span>
+            <strong id="statBestStreak">0</strong>
+            <small>日</small>
+          </article>
+          <article class="metric">
+            <span>Lv.</span>
+            <strong id="levelText">1</strong>
+            <small id="xpText">0 XP</small>
+          </article>
+        </div>
+
+        <article class="card">
+          <h2>学習ログ</h2>
+          <div class="bars" id="historyBars"></div>
+        </article>
+
+        <article class="card">
+          <h2>苦手ランキング</h2>
+          <div id="weakRanking" class="ranking"></div>
+        </article>
+      </section>
+
+      <section class="view" id="view-import">
+        <article class="card">
+          <h2>CSV取り込み</h2>
+          <p class="help">形式：<code>問題,答え,タグ,ヒント,解説</code>。タグは <code>化学|官能基</code> みたいに区切れる。</p>
+          <textarea id="csvInput" rows="8" placeholder="問題,答え,タグ,ヒント,解説&#10;-OHの官能基名は？,ヒドロキシ基,化学|官能基,水酸基ともいう,アルコールに含まれる"></textarea>
+          <div class="answer-actions">
+            <button id="importCsvBtn" class="primary">CSVを追加</button>
+            <button id="sampleCsvBtn">サンプル挿入</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>バックアップ</h2>
+          <p class="help">JSONで丸ごと保存できる。スマホ機種変やGitHub管理に便利。</p>
+          <div class="answer-actions">
+            <button id="exportJsonBtn" class="primary">JSONを書き出し</button>
+            <button id="exportCsvBtn">CSVを書き出し</button>
+            <label class="file-btn">
+              JSONを読み込み
+              <input type="file" id="importJsonFile" accept="application/json" hidden />
+            </label>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" id="view-settings">
+        <article class="card">
+          <h2>設定</h2>
+          <div class="settings-grid">
+            <label>
+              テーマ
+              <select id="themeSelect">
+                <option value="system">端末に合わせる</option>
+                <option value="light">ライト</option>
+                <option value="dark">ダーク</option>
+              </select>
+            </label>
+            <label>
+              判定の厳しさ
+              <select id="strictnessSelect">
+                <option value="0.55">ゆるめ</option>
+                <option value="0.7">ふつう</option>
+                <option value="0.85">厳しめ</option>
+              </select>
+            </label>
+            <label>
+              1日の目標
+              <input id="dailyGoalInput" type="number" min="1" max="999" />
+            </label>
+          </div>
+          <div class="danger-zone">
+            <h3>危険ゾーン</h3>
+            <button id="resetAllBtn" class="danger-btn">全データ削除</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>ショートカット</h2>
+          <div class="shortcut-grid">
+            <span>Enter</span><p>判定 / 次へ</p>
+            <span>1</span><p>忘れた</p>
+            <span>2</span><p>惜しい</p>
+            <span>3</span><p>正解</p>
+            <span>4</span><p>余裕</p>
+            <span>?</span><p>ヒント</p>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="quickAddDialog">
+    <form method="dialog" class="modal-card">
+      <h2>すぐ追加</h2>
+      <input id="quickQ" placeholder="問題" />
+      <input id="quickA" placeholder="答え" />
+      <input id="quickTags" placeholder="タグ" />
+      <div class="answer-actions">
+        <button value="cancel">閉じる</button>
+        <button id="quickAddSave" class="primary" value="default">追加</button>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="itemTemplate">
+    <div class="list-item">
+      <div class="item-main">
+        <div class="item-top">
+          <strong class="item-question"></strong>
+          <span class="item-badges"></span>
+        </div>
+        <p class="item-answer"></p>
+        <p class="item-meta"></p>
+      </div>
+      <div class="item-actions">
+        <button class="edit-item">編集</button>
+        <button class="delete-item danger-text">削除</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
